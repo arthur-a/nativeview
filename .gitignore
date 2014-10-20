@@ -1,0 +1,9 @@
+*.egg-info
+*.log
+*.pid
+*.pyc
+*.pyo
+*.sublime-workspace
+*.sublime-project
+*.coverage
+dist/
