@@ -134,6 +134,17 @@ class String(UnitType):
         return unicode(value)
 
 
+def allow_to_serialize(unit, serialized):
+    if serialized is None and unit.type.omit_if_none:
+        return False
+    if (unit.type.omit_if_empty and
+            hasattr(serialized, '__len__') and
+            len(serialized) == 0):
+        return False
+
+    return True
+
+
 class Mapping(UnitType):
     def serialize(self, value):
         if value is None:
@@ -141,13 +152,10 @@ class Mapping(UnitType):
 
         result = OrderedDict()
         for name, unit in self.unit.children.iteritems():
-            subvalue = value.get(name)
+            key = unit.name or name
+            subvalue = value.get(key)
             serialized = unit.serialize(subvalue)
-            if serialized is None and unit.type.omit_if_none:
-                continue
-            if (unit.type.omit_if_empty and
-                    hasattr(serialized, '__len__') and
-                    len(serialized) == 0):
+            if not allow_to_serialize(unit, serialized):
                 continue
             result[name] = serialized
         return result
@@ -168,13 +176,10 @@ class ObjectMapping(UnitType):
 
         result = OrderedDict()
         for name, unit in self.unit.children.iteritems():
-            subvalue = getattr(value, name, None)
+            attrname = unit.name or name
+            subvalue = getattr(value, attrname, None)
             serialized = unit.serialize(subvalue)
-            if serialized is None and unit.type.omit_if_none:
-                continue
-            if (unit.type.omit_if_empty and
-                    hasattr(serialized, '__len__') and
-                    len(serialized) == 0):
+            if not allow_to_serialize(unit, serialized):
                 continue
             result[name] = serialized
         return result
@@ -189,11 +194,7 @@ class Sequence(UnitType):
         child = self.unit.children.values()[0]
         for subval in value:
             serialized = child.serialize(subval)
-            if serialized is None and child.type.omit_if_none:
-                continue
-            if (child.type.omit_if_empty and
-                    hasattr(serialized, '__len__') and
-                    len(serialized) == 0):
+            if not allow_to_serialize(child, serialized):
                 continue
             result.append(serialized)
         return result

@@ -17,18 +17,24 @@ class _SchemaUnit(object):
         unit._order = next(cls._counter)
         return unit
 
-    def __init__(
-            self, type_=None,
-            validator=None,
-            serialized_data=None,
-            deserialized_data=None
-        ):
-        type_ = type_ if type_ is not None else self.schema_type()
+    def __init__(self, *args, **kwargs):
+        name = type_ = None
+        args = list(args)
+        if args:
+            if isinstance(args[0], basestring):
+                name = args.pop(0)
+
+        if args:
+            type_ = args[0]
+        else:
+            type_ = self.schema_type()
+
         type_.unit = self
         self.type = type_
-        self.validator = validator
-        self.serialized_data = serialized_data
-        self.deserialized_data = deserialized_data
+        self.name = name
+        self.validator = kwargs.get('validator')
+        self.serialized_data = kwargs.get('serialized_data')
+        self.deserialized_data = kwargs.get('deserialized_data')
 
     def serialize(self, value=None):
         if value is None:
