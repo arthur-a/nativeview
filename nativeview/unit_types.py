@@ -67,10 +67,9 @@ class Integer(UnitType):
             raise ValidationError(self.error_messages['invalid'], self.unit)
 
 
-ISO_8601 = 'iso-8601'
 class DateTime(UnitType):
     default_error_messages = {
-        'invalid': "Datetime has wrong format. Use this format instead: %s",
+        'invalid': "Datetime has wrong format. Use this format instead: '%s'.",
     }
     format = 'YYYY-MM-DDTHH:mm:ssZZ'
 
@@ -82,24 +81,22 @@ class DateTime(UnitType):
         if value is None:
             return value
 
-        return arrow.get(value).format(self.format)
+        try:
+            return arrow.get(value).format(self.format)
+        except arrow.parser.ParserError as e:
+            raise ValueError(e.message)
 
     def deserialize(self, value):
-        if self.format.lower() == ISO_8601:
-            try:
-                return isodate.parse_date(value)
-            except (TypeError, ValueError):
-                parsed = datetime.datetime.strptime(value, format)
-        else:
-            return isodate.parse_date(value)
-
-        msg = self.error_messages['invalid'] % self.format
-        raise ValidationError(msg, self.unit)
+        try:
+            return arrow.get(value, self.format).datetime
+        except (TypeError, arrow.parser.ParserError):
+            msg = self.error_messages['invalid'] % self.format
+            raise ValidationError(msg, self.unit)
 
 
 class Date(UnitType):
     default_error_messages = {
-        'invalid': "Date has wrong format. Use this format instead: %s",
+        'invalid': "Date has wrong format. Use this format instead: '%s'.",
     }
     format = 'YYYY-MM-DD'
 
@@ -111,7 +108,17 @@ class Date(UnitType):
         if value is None:
             return value
 
-        return arrow.get(value).format(self.format)
+        try:
+            return arrow.get(value).format(self.format)
+        except arrow.parser.ParserError as e:
+            raise ValueError(e.message)
+
+    def deserialize(self, value):
+        try:
+            return arrow.get(value, self.format).date()
+        except (TypeError, arrow.parser.ParserError):
+            msg = self.error_messages['invalid'] % self.format
+            raise ValidationError(msg, self.unit)
 
 
 class String(UnitType):
