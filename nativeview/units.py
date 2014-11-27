@@ -35,6 +35,8 @@ class _SchemaUnit(object):
         self.validator = kwargs.get('validator')
         self.serialized_data = kwargs.get('serialized_data')
         self.deserialized_data = kwargs.get('deserialized_data')
+        self.required = kwargs.get('required', False)
+        self.read_only = kwargs.get('read_only', False)
 
     def serialize(self, value=None):
         if value is None:
