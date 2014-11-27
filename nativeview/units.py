@@ -70,6 +70,9 @@ class _SchemaUnit(object):
 
         return not bool(self._errors)
 
+    def prepare_to_sync(self, instance, value):
+        return value
+
     def sync(self, instance=None, value=None):
         if instance is None:
             instance = self.instance
@@ -80,8 +83,11 @@ class _SchemaUnit(object):
         assert instance is not None, "Cannot sync with None value."
         assert self.name is not None, "Cannot sync unnamed unit."
 
+        value = self.prepare_to_sync(instance, value)
         if isinstance(instance, dict):
             instance[self.name] = value
+        if isinstance(instance, list):
+            instance.append(value)
         else:
             setattr(instance, self.name, value)
 

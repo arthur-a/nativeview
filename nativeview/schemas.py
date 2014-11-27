@@ -18,8 +18,9 @@ class MappingSyncMixin(object):
 
         assert instance is not None, "Cannot sync with None value."
 
-        for name, value in self.validated_data.iteritems():
-            self.children[name].sync(instance, value)
+        value = self.prepare_to_sync(instance, value)
+        for name, subval in value.iteritems():
+            self.children[name].sync(instance, subval)
 
 
 class MappingSchema(MappingSyncMixin, SchemaUnit):
@@ -50,11 +51,16 @@ class SequenceSchema(SchemaUnit):
 
         if isinstance(instance, list):
             del instance[:]
-            instance.extend(value)
+            instance_seq = instance
         else:
             instance_seq = getattr(instance, self.name, None)
             if instance_seq is None:
-                setattr(instance, self.name, instance)
+                instance_seq = []
+                setattr(instance, self.name, instance_seq)
             else:
                 del instance_seq[:]
-                instance_seq.extend(value)
+
+        value = self.prepare_to_sync(instance, value)
+        child = self.children.values()[0]
+        for i in xrange(len(value)):
+            child.sync(instance_seq, value[i])
