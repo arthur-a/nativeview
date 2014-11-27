@@ -42,6 +42,7 @@ class _SchemaUnit(object):
         self.deserialized_data = kwargs.get('deserialized_data', empty)
         self.required = kwargs.get('required', False)
         self.read_only = kwargs.get('read_only', False)
+        self.instance = kwargs.get('instance')
 
     def serialize(self, value=empty):
         if value is empty:
@@ -68,6 +69,21 @@ class _SchemaUnit(object):
             self._errors = e.detail
 
         return not bool(self._errors)
+
+    def sync(self, instance=None, value=None):
+        if instance is None:
+            instance = self.instance
+
+        if value is None:
+            value = self.validated_data
+
+        assert instance is not None, "Cannot sync with None value."
+        assert self.name is not None, "Cannot sync unnamed unit."
+
+        if isinstance(instance, dict):
+            instance[self.name] = value
+        else:
+            setattr(instance, self.name, value)
 
     @property
     def errors(self):
@@ -96,6 +112,7 @@ class SchemaMeta(type):
         for name, value in new_attrs.items():
             if isinstance(value, _SchemaUnit):
                 del new_attrs[name]
+                value.name = name
                 units.append((value._order, name, value))
 
         cls = type.__new__(meta, class_name, bases, new_attrs)
