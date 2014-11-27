@@ -148,22 +148,9 @@ def allow_to_serialize(unit, serialized):
     return True
 
 
-class Mapping(UnitType):
-    def serialize(self, value):
-        if value is None:
-            return None
-
-        result = OrderedDict()
-        for name, unit in self.unit.children.iteritems():
-            key = unit.name or name
-            subvalue = value.get(key)
-            serialized = unit.serialize(subvalue)
-            if not allow_to_serialize(unit, serialized):
-                continue
-            result[name] = serialized
-        return result
-
+class MappingDeserializeMixin(object):
     def deserialize(self, data):
+        # TODO: To check data for dictionary
         result = OrderedDict()
         errors = OrderedDict()
 
@@ -185,7 +172,23 @@ class Mapping(UnitType):
         return result
 
 
-class ObjectMapping(UnitType):
+class Mapping(MappingDeserializeMixin, UnitType):
+    def serialize(self, value):
+        if value is None:
+            return None
+
+        result = OrderedDict()
+        for name, unit in self.unit.children.iteritems():
+            key = unit.name or name
+            subvalue = value.get(key)
+            serialized = unit.serialize(subvalue)
+            if not allow_to_serialize(unit, serialized):
+                continue
+            result[name] = serialized
+        return result
+
+
+class ObjectMapping(MappingDeserializeMixin, UnitType):
     def serialize(self, value):
         if value is None:
             return None
@@ -202,6 +205,17 @@ class ObjectMapping(UnitType):
 
 
 class Sequence(UnitType):
+    def _validate_seq(self, value):
+        if isinstance(value, list):
+            return value
+        elif (hasattr(value, '__iter__') and
+            not hasattr(value, 'get') and
+            not isinstance(value, basestring)):
+            return list(value)
+        else:
+            detail = "%s is not iterable" % value
+            raise ValidationError(detail, self.unit)
+
     def serialize(self, value):
         if value is None:
             return None
@@ -213,4 +227,30 @@ class Sequence(UnitType):
             if not allow_to_serialize(child, serialized):
                 continue
             result.append(serialized)
+        return result
+
+    def deserialize(self, value):
+        value = self._validate_seq(value)
+        result = []
+        errors = OrderedDict()
+
+        child = self.unit.children.values()[0]
+        if self.unit.read_only:
+            if self.unit.name:
+                detail = "%s is read only value." % self.unit.name
+            else:
+                detail = "Read only value."
+            raise ValidationError(detail, self.unit)
+
+        for num, subval in enumerate(value):
+            try:
+                validated_value = child.run_validation(subval)
+            except ValidationError as e:
+                errors[num] = e.detail
+            else:
+                result.append(validated_value)
+
+        if errors:
+            raise ValidationError(errors)
+
         return result
