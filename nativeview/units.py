@@ -1,8 +1,13 @@
 import itertools
 from collections import OrderedDict
 
+from exceptions import ValidationError
+
 
 __all__ = ['SchemaUnit']
+
+
+class empty: pass
 
 
 # Schema units
@@ -33,21 +38,56 @@ class _SchemaUnit(object):
         self.type = type_
         self.name = name
         self.validator = kwargs.get('validator')
-        self.serialized_data = kwargs.get('serialized_data')
-        self.deserialized_data = kwargs.get('deserialized_data')
+        self.serialized_data = kwargs.get('serialized_data', empty)
+        self.deserialized_data = kwargs.get('deserialized_data', empty)
         self.required = kwargs.get('required', False)
         self.read_only = kwargs.get('read_only', False)
 
-    def serialize(self, value=None):
-        if value is None:
+    def serialize(self, value=empty):
+        if value is empty:
             value = self.deserialized_data
         return self.type.serialize(value)
 
-    def deserialize(self):
-        raise NotImplementedError
+    def deserialize(self, value=empty):
+        if value is empty:
+            value = self.serialized_data
+        return self.type.deserialize(value)
 
-    def is_valid(self):
-        raise NotImplementedError
+    def run_validation(self, value=empty):
+        data = self.deserialize(value)
+        if self.validator:
+            self.validator(self, data)
+        return data
+
+    def is_valid(self, value=empty):
+        self._errors = False
+        try:
+            self._validated_data = self.run_validation(value)
+        except ValidationError as e:
+            self._validated_data = empty
+            self._errors = e.detail
+
+        return not bool(self._errors)
+
+    @property
+    def errors(self):
+        assert hasattr(self, '_errors'), \
+            'You must call `.is_valid()` before accessing `.errors`.'
+        return self._errors
+
+    @property
+    def errors(self):
+        assert hasattr(self, '_errors'), \
+            'You must call `.is_valid()` before accessing `.errors`.'
+        return self._errors
+
+    @property
+    def validated_data(self):
+        assert hasattr(self, '_validated_data'), \
+            'You must call `.is_valid()` before accessing `.validated_data`.'
+        if self._validated_data is empty:
+            return None
+        return self._validated_data
 
 
 class SchemaMeta(type):

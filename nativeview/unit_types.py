@@ -3,17 +3,13 @@ import datetime
 
 import arrow
 
+from exceptions import ValidationError
+
 
 __all__ = [
     'ValidationError', 'Integer', 'DateTime', 'Date',
     'String', 'Mapping', 'ObjectMapping', 'Sequence'
 ]
-
-
-
-class ValidationError(Exception):
-    def __init__(self, msg, unit):
-        super(ValidationError, self).__init__(msg)
 
 
 # UnitTypes
@@ -168,11 +164,24 @@ class Mapping(UnitType):
         return result
 
     def deserialize(self, data):
-        result = {}
+        result = OrderedDict()
+        errors = OrderedDict()
+
         for name, unit in self.unit.children.iteritems():
+            # TODO: raise an error or not?
+            if unit.read_only:
+                continue
             value = data.get(name)
-            deserialized = unit.deserialize(value)
-            result[name] = deserialized
+            try:
+                validated_value = unit.run_validation(value)
+            except ValidationError as e:
+                errors[name] = e.detail
+            else:
+                result[name] = validated_value
+
+        if errors:
+            raise ValidationError(errors)
+
         return result
 
 

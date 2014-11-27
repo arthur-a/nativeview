@@ -1,4 +1,4 @@
-from unit_types import ValidationError
+from exceptions import ValidationError
 
 
 class MinMaxInterface(object):
