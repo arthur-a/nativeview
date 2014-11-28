@@ -8,27 +8,52 @@ __all__ = ['MappingSchema', 'ObjectMappingSchema', 'SequenceSchema']
 
 # Mapping schema
 
-class MappingSyncMixin(object):
+def mapping_sync(unit, value, setter):
+    for name, subval in value.iteritems():
+        child = unit.children[name]
+        if hasattr(child, 'sync'):
+            subval = child.sync(value=subval)
+        setter(name, subval)
+
+
+class MappingSchema(SchemaUnit):
+    schema_type = Mapping
+
     def sync(self, instance=None, value=None):
         if instance is None:
             instance = self.instance
 
+        if instance is None:
+            instance = {}
+
         if value is None:
             value = self.validated_data
 
-        assert instance is not None, "Cannot sync with None value."
 
-        value = self.prepare_to_sync(instance, value)
-        for name, subval in value.iteritems():
-            self.children[name].sync(instance, subval)
-
-
-class MappingSchema(MappingSyncMixin, SchemaUnit):
-    schema_type = Mapping
+        setter = lambda n, v: instance.__setitem__(n, v)
+        mapping_sync(self, value, setter)
+        return instance
 
 
-class ObjectMappingSchema(MappingSyncMixin, SchemaUnit):
+class ObjectMappingSchema(SchemaUnit):
     schema_type = ObjectMapping
+
+    def restore_object(self, validated_data):
+        raise NotImplementedError
+
+    def sync(self, instance=None, value=None):
+        if value is None:
+            value = self.validated_data
+
+        if instance is None:
+            instance = self.instance
+
+        if instance is None:
+            instance = self.restore_object(value)
+
+        setter = lambda n, v: setattr(instance, n, v)
+        mapping_sync(self, value, setter)
+        return instance
 
 
 class SequenceSchema(SchemaUnit):
@@ -44,23 +69,17 @@ class SequenceSchema(SchemaUnit):
         if instance is None:
             instance = self.instance
 
+        if instance is None:
+            instance = []
+
         if value is None:
             value = self.validated_data
 
-        assert instance is not None, "Cannot sync with None value."
-
-        if isinstance(instance, list):
-            del instance[:]
-            instance_seq = instance
-        else:
-            instance_seq = getattr(instance, self.name, None)
-            if instance_seq is None:
-                instance_seq = []
-                setattr(instance, self.name, instance_seq)
-            else:
-                del instance_seq[:]
-
-        value = self.prepare_to_sync(instance, value)
         child = self.children.values()[0]
         for i in xrange(len(value)):
-            child.sync(instance_seq, value[i])
+            subval = value[i]
+            if hasattr(child, 'sync'):
+                subval = child.sync(value=subval)
+            instance.append(subval)
+
+        return instance
