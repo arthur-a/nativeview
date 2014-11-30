@@ -20,7 +20,7 @@ class SchemaBase(object):
             value = self.validated_data
 
         if instance is None:
-            instance = self.instance
+            instance = self.source_object
 
         if instance is None:
             instance = self.restore_object(value)

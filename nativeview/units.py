@@ -37,21 +37,21 @@ class _SchemaUnit(object):
         type_.unit = self
         self.type = type_
         self.name = name
-        self.validator = kwargs.get('validator')
-        self.serialized_data = kwargs.get('serialized_data', empty)
-        self.deserialized_data = kwargs.get('deserialized_data', empty)
-        self.required = kwargs.get('required', False)
-        self.read_only = kwargs.get('read_only', False)
-        self.instance = kwargs.get('instance')
+        self.validator = kwargs.pop('validator', None)
+        self._initial_data = kwargs.pop('data', empty)
+        self.source_object = kwargs.pop('object', None)
+        self.required = kwargs.pop('required', False)
+        self.read_only = kwargs.pop('read_only', False)
+        assert not kwargs, 'Unknown arguments: %s' % kwargs
 
     def serialize(self, value=empty):
         if value is empty:
-            value = self.deserialized_data
+            value = self.source_object
         return self.type.serialize(value)
 
     def deserialize(self, value=empty):
         if value is empty:
-            value = self.serialized_data
+            value = self._initial_data
         return self.type.deserialize(value)
 
     def run_validation(self, value=empty):
