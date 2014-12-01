@@ -14,8 +14,8 @@ def handle_basic(unit, only_type=False):
     result['required'] = unit.required
     result['read_only'] = unit.read_only
 
-    if isinstance(unit.validator, validators.ChoicesInterface):
-        result['choices'] = unit.validator.choices
+    if unit.validator and hasattr(unit.validator, 'get_metadata'):
+        result.update(unit.validator.get_metadata())
 
     return result
 
