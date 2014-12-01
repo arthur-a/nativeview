@@ -65,6 +65,7 @@ class _SchemaUnit(object):
         self.default = kwargs.pop('default', empty)
         self.read_only = kwargs.pop('read_only', False)
         self.allow_none = kwargs.pop('allow_none', False)
+        self._context = kwargs.pop('context', {})
 
         # Omit if object has __len__ method and this method returns zero
         # Only for serialization.
@@ -134,6 +135,17 @@ class _SchemaUnit(object):
         if self._validated_data is empty:
             return None
         return self._validated_data
+
+    @property
+    def root(self):
+        root = self
+        while root.parent is not None:
+            root = root.parent
+        return root
+
+    @property
+    def context(self):
+        return getattr(self.root, '_context', {})
 
 
 class SchemaMeta(type):
