@@ -29,6 +29,8 @@ class _SchemaUnit(object):
         unit = object.__new__(cls)
         unit.children = OrderedDict(cls.__schema_units__)
         unit._order = next(cls._counter)
+        for child in unit.children.itervalues():
+            child.parent = unit
         return unit
 
     def __init__(self, *args, **kwargs):
@@ -46,6 +48,7 @@ class _SchemaUnit(object):
         type_.unit = self
         self.type = type_
         self.name = name
+        self.parent = None
 
         self.validator = kwargs.pop('validator', None)
         self._initial_data = kwargs.pop('data', empty)
