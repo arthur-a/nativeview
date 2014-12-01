@@ -37,11 +37,18 @@ class _SchemaUnit(object):
         type_.unit = self
         self.type = type_
         self.name = name
+
         self.validator = kwargs.pop('validator', None)
         self._initial_data = kwargs.pop('data', empty)
+
         self.source_object = kwargs.pop('object', None)
+
         self.required = kwargs.pop('required', False)
         self.read_only = kwargs.pop('read_only', False)
+        self.omit_if_none = kwargs.pop('omit_if_none', False)
+        # Omit if object has __len__ method and this method returns zero
+        self.omit_if_empty = kwargs.pop('omit_if_empty', False)
+
         assert not kwargs, 'Unknown arguments: %s' % kwargs
 
     def serialize(self, value=empty):

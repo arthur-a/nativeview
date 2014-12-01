@@ -15,11 +15,6 @@ __all__ = [
 # UnitTypes
 
 class UnitType(object):
-    omit_if_none = False
-
-    # Omit if object has __len__ method and this method returns zero
-    omit_if_empty = False
-
     def __init__(
             self, unit=None,
             error_messages=None,
@@ -138,9 +133,9 @@ class String(UnitType):
 
 
 def allow_to_serialize(unit, serialized):
-    if serialized is None and unit.type.omit_if_none:
+    if serialized is None and unit.omit_if_none:
         return False
-    if (unit.type.omit_if_empty and
+    if (unit.omit_if_empty and
             hasattr(serialized, '__len__') and
             len(serialized) == 0):
         return False
