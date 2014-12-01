@@ -58,7 +58,7 @@ class _SchemaUnit(object):
         messages.update(kwargs.pop('error_messages', {}))
         self.error_messages = messages
 
-        self.required = kwargs.pop('required', False)
+        self.required = kwargs.pop('required', True)
         self.default = kwargs.pop('default', empty)
         self.read_only = kwargs.pop('read_only', False)
         self.allow_none = kwargs.pop('allow_none', False)
