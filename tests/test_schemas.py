@@ -71,9 +71,10 @@ class TestMappingSchemaCase(unittest.TestCase):
             dict(schema.serialize()), self.serialized_data)
 
     def test_deserialize_ok(self):
-        schema = TestMappingSchema(data=self.serialized_data)
+        schema = TestMappingSchema()
         self.assertDictEqual(
-            dict(schema.deserialize()), self.deserialized_data)
+            dict(schema.deserialize(self.serialized_data)),
+            self.deserialized_data)
 
     def test_sync(self):
         schema = TestMappingSchema(
@@ -114,8 +115,10 @@ class TestNested1MappingSchemaCase(unittest.TestCase):
         self.assertDictEqual(dict(schema.serialize()), self.serialized_data)
 
     def test_deserialize_ok(self):
-        schema = TestMappingSchemaNested1(data=self.serialized_data)
-        self.assertDictEqual(dict(schema.deserialize()), self.deserialized_data)
+        schema = TestMappingSchemaNested1()
+        self.assertDictEqual(
+            dict(schema.deserialize(self.serialized_data)),
+            self.deserialized_data)
 
     def test_sync(self):
         schema = TestMappingSchemaNested1(
@@ -149,8 +152,10 @@ class TestObjectMappingSchemaCase(unittest.TestCase):
         self.assertDictEqual(dict(schema.serialize()), self.serialized_data)
 
     def test_deserialize_ok(self):
-        schema = TestObjectSchema(data=self.serialized_data)
-        self.assertDictEqual(dict(schema.deserialize()), self.deserialized_data)
+        schema = TestObjectSchema()
+        self.assertDictEqual(
+            dict(schema.deserialize(self.serialized_data)),
+            self.deserialized_data)
 
     def test_sync(self):
         schema = TestObjectSchema(

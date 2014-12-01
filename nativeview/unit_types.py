@@ -4,6 +4,7 @@ import datetime
 import arrow
 
 from exceptions import ValidationError
+from units import empty, SkipUnit
 
 
 __all__ = [
@@ -153,11 +154,13 @@ class MappingDeserializeMixin(object):
             # TODO: raise an error or not?
             if unit.read_only:
                 continue
-            value = data.get(name)
+            value = data.get(name, empty)
             try:
                 validated_value = unit.run_validation(value)
             except ValidationError as e:
                 errors[name] = e.detail
+            except SkipUnit:
+                pass
             else:
                 result[name] = validated_value
 
@@ -242,6 +245,8 @@ class Sequence(UnitType):
                 validated_value = child.run_validation(subval)
             except ValidationError as e:
                 errors[num] = e.detail
+            except SkipUnit:
+                pass
             else:
                 result.append(validated_value)
 
