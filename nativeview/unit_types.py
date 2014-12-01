@@ -9,7 +9,7 @@ from units import empty, SkipUnit
 
 __all__ = [
     'ValidationError', 'Integer', 'DateTime', 'Date',
-    'String', 'Mapping', 'ObjectMapping', 'Sequence'
+    'String', 'FileFieldStorage', 'Mapping', 'ObjectMapping', 'Sequence'
 ]
 
 
@@ -131,6 +131,31 @@ class String(UnitType):
             return None
 
         return unicode(value)
+
+
+class FileFieldStorage(UnitType):
+    default_error_messages = {
+        'invalid': "The submitted data was not a file.",
+    }
+
+    def serialize(self, value):
+        if value is None:
+            return value
+
+        return value.filename
+
+    def deserialize(self, data):
+        if data is None:
+            return None
+
+        try:
+            file_name = data.filename
+            file_size = data.file
+        except AttributeError:
+            message = self.error_messages['invalid']
+            raise ValidationError(message, self.unit)
+
+        return data
 
 
 def allow_to_serialize(unit, serialized):
