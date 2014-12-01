@@ -6,7 +6,7 @@ import validators
 
 def handle_basic(unit, only_type=False):
     result = OrderedDict()
-    result['type'] = types_lookup[unit.type.__class__]
+    result['type'] = lookup_type(unit)
 
     if only_type:
         return result
@@ -40,6 +40,13 @@ handlers_lookup = {
     unit_types.ObjectMapping: handle_with_children,
 }
 
+def lookup_handler(unit):
+    for cls, handler in handlers_lookup.iteritems():
+        if isinstance(unit.type, cls):
+            return handler
+
+    raise KeyError(unit.type)
+
 
 types_lookup = {
     unit_types.Integer: 'integer',
@@ -50,6 +57,13 @@ types_lookup = {
     unit_types.ObjectMapping: 'dictionary',
 }
 
+def lookup_type(unit):
+    for cls, type in types_lookup.iteritems():
+        if isinstance(unit.type, cls):
+            return type
+
+    raise KeyError(unit.type)
+
 
 def determine_metadata(unit, only_type=False):
-    return handlers_lookup[unit.type.__class__](unit, only_type)
+    return lookup_handler(unit)(unit, only_type)
