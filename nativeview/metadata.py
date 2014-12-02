@@ -15,7 +15,7 @@ def handle_basic(unit, only_type=False):
     result['read_only'] = unit.read_only
 
     if unit.validator and hasattr(unit.validator, 'get_metadata'):
-        result.update(unit.validator.get_metadata())
+        result.update(unit.validator.get_metadata(unit=unit))
 
     return result
 

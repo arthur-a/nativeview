@@ -19,7 +19,7 @@ class ValidatedChain(object):
             exc = ValidationError(errors, unit)
             raise exc
 
-    def get_metadata(self):
+    def get_metadata(self, unit):
         metadata = {}
         for validator in self.validators:
             if hasattr(validator, 'get_metadata'):
@@ -50,7 +50,7 @@ class Choices(object):
             message = self.error_message % (value, choices_values)
             raise ValidationError(message, unit)
 
-    def get_metadata(self):
+    def get_metadata(self, unit):
         return {'choices': [dict(value=v, label=l) for v,l in self]}
 
 
@@ -73,7 +73,7 @@ class Range(object):
                 raise ValidationError(
                     self.max_error_message % (value, self.max), unit)
 
-    def get_metadata(self):
+    def get_metadata(self, unit):
         metadata = {}
 
         if self.min is not None:
@@ -102,7 +102,7 @@ class Length(object):
             if len(value) > self.max:
                 raise ValidationError(self.max_error_message % self.max, unit)
 
-    def get_metadata(self):
+    def get_metadata(self, unit):
         metadata = {}
 
         if self.min is not None:
