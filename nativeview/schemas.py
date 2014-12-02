@@ -9,13 +9,16 @@ __all__ = ['MappingSchema', 'ObjectMappingSchema', 'SequenceSchema']
 # Mapping schema
 
 class SchemaBase(object):
-    def restore_object(self, validated_data):
+    def restore_object(self, validated_data, mapping):
         raise NotImplementedError
 
-    def sync(self, instance=None, value=None):
+    def sync(self, instance=None, value=None, mapping=None):
         raise NotImplementedError
 
-    def sync_impl(self, instance, value, callback):
+    def sync_impl(self, instance, value, callback, mapping):
+        if mapping is None:
+            mapping = {}
+
         if value is None:
             value = self.validated_data
 
@@ -23,9 +26,10 @@ class SchemaBase(object):
             instance = self.source_object
 
         if instance is None:
-            instance = self.restore_object(value)
+            instance = self.restore_object(value, mapping)
 
-        callback(instance, value)
+        mapping[self] = instance
+        callback(instance, value, mapping)
 
         return instance
 
@@ -33,32 +37,32 @@ class SchemaBase(object):
 class MappingSchema(SchemaBase, SchemaUnit):
     schema_type = Mapping
 
-    def restore_object(self, validated_data):
+    def restore_object(self, validated_data, mapping):
         return {}
 
-    def sync(self, instance=None, value=None):
-        def callback(instance, value):
+    def sync(self, instance=None, value=None, mapping=None):
+        def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
                 if hasattr(child, 'sync'):
-                    subval = child.sync(value=subval)
+                    subval = child.sync(value=subval, mapping=mapping)
                 instance[name] = subval
 
-        return self.sync_impl(instance, value, callback)
+        return self.sync_impl(instance, value, callback, mapping)
 
 
 class ObjectMappingSchema(SchemaBase, SchemaUnit):
     schema_type = ObjectMapping
 
-    def sync(self, instance=None, value=None):
-        def callback(instance, value):
+    def sync(self, instance=None, value=None, mapping=None):
+        def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
                 if hasattr(child, 'sync'):
-                    subval = child.sync(value=subval)
+                    subval = child.sync(value=subval, mapping=mapping)
                 setattr(instance, name, subval)
 
-        return self.sync_impl(instance, value, callback)
+        return self.sync_impl(instance, value, callback, mapping)
 
 
 class SequenceSchema(SchemaBase, SchemaUnit):
@@ -70,16 +74,16 @@ class SequenceSchema(SchemaBase, SchemaUnit):
             raise TypeError(
                 'Sequence schemas must have exactly one child unit')
 
-    def restore_object(self, validated_data):
+    def restore_object(self, validated_data, mapping):
         return []
 
-    def sync(self, instance=None, value=None):
-        def callback(instance, value):
+    def sync(self, instance=None, value=None, mapping=None):
+        def callback(instance, value, mapping):
             child = self.children.values()[0]
             for i in xrange(len(value)):
                 subval = value[i]
                 if hasattr(child, 'sync'):
-                    subval = child.sync(value=subval)
+                    subval = child.sync(value=subval, mapping=mapping)
                 instance.append(subval)
 
-        return self.sync_impl(instance, value, callback)
+        return self.sync_impl(instance, value, callback, mapping)
