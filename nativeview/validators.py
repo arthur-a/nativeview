@@ -35,14 +35,23 @@ class Choices(object):
         """
         self.choices = choices
 
+    def __iter__(self):
+        """Returns tuple of value and label on each iteration."""
+        for item in self.choices:
+            if isinstance(item, (list, tuple)) and len(item) == 2:
+                yield item[0], item[1]
+            else:
+                yield item, item
+
     def __call__(self, unit, value):
-        if not value in self.choices:
-            choices = ', '.join('%s' % c for c in self.choices)
-            self.error_message % (value, choices)
-            raise ValidationError(msg, unit)
+        choices_values = [v for v, l in self]
+        if value not in choices_values:
+            choices_values = ', '.join('%s' % v for v in choices_values)
+            message = self.error_message % (value, choices_values)
+            raise ValidationError(message, unit)
 
     def get_metadata(self):
-        return {'choices': list(self.choices)}
+        return {'choices': [dict(value=v, label=l) for v,l in self]}
 
 
 class Range(object):
