@@ -30,6 +30,9 @@ class ValidatedChain(object):
 class Choices(object):
     error_message = "%s is not one of %s."
     def __init__(self, choices):
+        """
+        :choices: object with iterator interface.
+        """
         self.choices = choices
 
     def __call__(self, unit, value):
@@ -39,7 +42,7 @@ class Choices(object):
             raise ValidationError(msg, unit)
 
     def get_metadata(self):
-        return {'choices': self.choices}
+        return {'choices': list(self.choices)}
 
 
 class Range(object):
