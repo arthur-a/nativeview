@@ -9,7 +9,8 @@ from units import empty, SkipUnit
 
 __all__ = [
     'ValidationError', 'Integer', 'DateTime', 'Date',
-    'String', 'FileFieldStorage', 'Mapping', 'ObjectMapping', 'Sequence'
+    'String', 'FileFieldStorage', 'Boolean',
+    'Mapping', 'ObjectMapping', 'Sequence'
 ]
 
 
@@ -156,6 +157,28 @@ class FileFieldStorage(UnitType):
             raise ValidationError(message, self.unit)
 
         return data
+
+
+class Boolean(UnitType):
+    default_error_messages = {
+        'invalid': 'invalid boolean.'
+    }
+    TRUE_VALUES = set(('t', 'T', 'true', 'True', 'TRUE', '1', 1, True))
+    FALSE_VALUES = set(('f', 'F', 'false', 'False', 'FALSE', '0', 0, 0.0, False))
+
+    def serialize(self, value):
+        if value in self.TRUE_VALUES:
+            return True
+        elif value in self.FALSE_VALUES:
+            return False
+        return bool(value)
+
+    def deserialize(self, data):
+        if data in self.TRUE_VALUES:
+            return True
+        elif data in self.FALSE_VALUES:
+            return False
+        raise ValidationError(self.default_error_messages['invalid'], self.unit)
 
 
 def allow_to_serialize(unit, serialized):
