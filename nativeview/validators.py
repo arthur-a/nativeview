@@ -29,15 +29,18 @@ class ValidatedChain(object):
 
 class Choices(object):
     error_message = "%s is not one of %s."
-    def __init__(self, choices):
+    def __init__(self, iter_or_func):
         """
-        :choices: object with iterator interface.
+        :iter_or_func: any iterable or callable object.
         """
-        self.choices = choices
+        if not callable(iter_or_func):
+            self.get_choices = lambda: iter_or_func
+        else:
+            self.get_choices = iter_or_func
 
     def __iter__(self):
         """Returns tuple of value and label on each iteration."""
-        for item in self.choices:
+        for item in self.get_choices():
             if isinstance(item, (list, tuple)) and len(item) == 2:
                 yield item[0], item[1]
             else:
