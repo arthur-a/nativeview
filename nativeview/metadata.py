@@ -20,7 +20,7 @@ def handle_basic(unit, only_type=False):
     return result
 
 
-def handle_with_children(unit, only_type=False):
+def handle_mapping(unit, only_type=False):
     result = handle_basic(unit, only_type)
     fields = result['fields'] = OrderedDict()
 
@@ -36,8 +36,10 @@ handlers_lookup = {
     unit_types.String: handle_basic,
     unit_types.Date: handle_basic,
     unit_types.DateTime: handle_basic,
-    unit_types.Mapping: handle_with_children,
-    unit_types.ObjectMapping: handle_with_children,
+    unit_types.Boolean: handle_basic,
+    unit_types.Mapping: handle_mapping,
+    unit_types.ObjectMapping: handle_mapping,
+    unit_types.Sequence: handle_mapping,
 }
 
 def lookup_handler(unit):
@@ -53,8 +55,10 @@ types_lookup = {
     unit_types.String: 'string',
     unit_types.Date: 'string',
     unit_types.DateTime: 'string',
+    unit_types.Boolean: 'boolean',
     unit_types.Mapping: 'dictionary',
     unit_types.ObjectMapping: 'dictionary',
+    unit_types.Sequence: 'sequence',
 }
 
 def lookup_type(unit):
