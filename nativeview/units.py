@@ -72,6 +72,8 @@ class _SchemaUnit(object):
         self.omit_if_empty = kwargs.pop('omit_if_empty', False)
         self.omit_if_none = kwargs.pop('omit_if_none', False)
 
+        self.preparer = kwargs.pop('preparer', None)
+
         assert not kwargs, 'Unknown arguments: %s' % kwargs
 
     def serialize(self, value=empty):
@@ -88,6 +90,9 @@ class _SchemaUnit(object):
         return self.default
 
     def run_validation(self, data=empty):
+        if self.preparer is not None:
+            data = self.preparer(data)
+
         if self.read_only:
             return self.get_default()
 
