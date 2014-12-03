@@ -23,7 +23,7 @@ class ValidatedChain(object):
         metadata = {}
         for validator in self.validators:
             if hasattr(validator, 'get_metadata'):
-                metadata.update(validator.get_metadata())
+                metadata.update(validator.get_metadata(unit))
         return metadata
 
 
