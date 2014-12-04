@@ -64,7 +64,12 @@ class DateTime(UnitType):
     default_error_messages = {
         'invalid': "Datetime has wrong format. Use this format instead: '%s'.",
     }
-    format = 'YYYY-MM-DDTHH:mm:ssZZ'
+    format = 'YYYY-MM-DDTHH:mm:ss.SSSZZ'
+    input_formats = [
+        'YYYY-MM-DDTHH:mm:ssZZ',
+        'YYYY-MM-DDTHH:mm:ss.SSSZZ',
+        'YYYY-MM-DDTHH:mm:ss.SSS'
+    ]
 
     def __init__(self, format=None, *args, **kwargs):
         self.format = format if format is not None else self.format
@@ -81,7 +86,7 @@ class DateTime(UnitType):
 
     def deserialize(self, value):
         try:
-            return arrow.get(value, self.format).datetime
+            return arrow.get(value, self.input_formats).datetime
         except (TypeError, arrow.parser.ParserError):
             msg = self.error_messages['invalid'] % self.format
             raise ValidationError(msg, self.unit)
