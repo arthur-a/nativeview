@@ -160,14 +160,18 @@ class SchemaMeta(type):
             if isinstance(value, _SchemaUnit):
                 del new_attrs[name]
                 value.name = name
-                units.append((value._order, name, value))
+                units.append((name, value))
 
-        cls = type.__new__(meta, class_name, bases, new_attrs)
+        units.sort(key=lambda el: el[1]._order)
 
-        units.sort()
-        cls.__schema_units__ = OrderedDict(u[1:] for u in units)
+        # Inherit super classes children.
+        for base in reversed(bases):
+            if hasattr(base, '__schema_units__'):
+                units = list(base.__schema_units__.iteritems()) + units
 
-        return cls
+        new_attrs['__schema_units__'] = OrderedDict(units)
+
+        return type.__new__(meta, class_name, bases, new_attrs)
 
 
 class SchemaUnit(_SchemaUnit):
