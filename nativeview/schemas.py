@@ -1,6 +1,7 @@
 from units import SchemaUnit
 
 from unit_types import Mapping, ObjectMapping, Sequence
+from units import empty
 
 
 __all__ = ['MappingSchema', 'ObjectMappingSchema', 'SequenceSchema']
@@ -19,7 +20,7 @@ class SchemaBase(object):
         if mapping is None:
             mapping = {}
 
-        if value is None:
+        if value is empty:
             value = self.validated_data
 
         if instance is None:
@@ -40,11 +41,11 @@ class MappingSchema(SchemaBase, SchemaUnit):
     def restore_object(self, validated_data, mapping):
         return {}
 
-    def sync(self, instance=None, value=None, mapping=None):
+    def sync(self, instance=None, value=empty, mapping=None):
         def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
-                if hasattr(child, 'sync'):
+                if subval is not None and hasattr(child, 'sync'):
                     subval = child.sync(value=subval, mapping=mapping)
                 instance[name] = subval
 
@@ -54,11 +55,11 @@ class MappingSchema(SchemaBase, SchemaUnit):
 class ObjectMappingSchema(SchemaBase, SchemaUnit):
     schema_type = ObjectMapping
 
-    def sync(self, instance=None, value=None, mapping=None):
+    def sync(self, instance=None, value=empty, mapping=None):
         def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
-                if hasattr(child, 'sync'):
+                if subval is not None and hasattr(child, 'sync'):
                     subval = child.sync(value=subval, mapping=mapping)
                 setattr(instance, name, subval)
 
@@ -77,12 +78,12 @@ class SequenceSchema(SchemaBase, SchemaUnit):
     def restore_object(self, validated_data, mapping):
         return []
 
-    def sync(self, instance=None, value=None, mapping=None):
+    def sync(self, instance=None, value=empty, mapping=None):
         def callback(instance, value, mapping):
             child = self.children.values()[0]
             for i in xrange(len(value)):
                 subval = value[i]
-                if hasattr(child, 'sync'):
+                if subval is not None and hasattr(child, 'sync'):
                     subval = child.sync(value=subval, mapping=mapping)
                 instance.append(subval)
 
