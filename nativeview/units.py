@@ -2,6 +2,7 @@ import itertools
 from collections import OrderedDict
 
 from exceptions import ValidationError
+from i18n import TranslationStringFactory as _
 
 
 __all__ = ['SchemaUnit']
@@ -21,8 +22,8 @@ class _SchemaUnit(object):
     schema_type = None
 
     default_error_messages = {
-        'required': 'This field is required.',
-        'none': 'None does not allow.'
+        'required': _('This field is required.'),
+        'none': _('None does not allow.')
     }
 
     def __new__(cls, *args, **kw):

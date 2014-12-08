@@ -1,10 +1,9 @@
-import os
-
 from setuptools import setup, find_packages
 
 
 requires = [
-    'arrow>=0.4.4'
+    'arrow>=0.4.4',
+    'translationstring'
 ]
 
 
@@ -19,5 +18,5 @@ setup(name='nativeview',
     url='',
     packages=find_packages('nativeview'),
     zip_safe=False,
-    install_requires=requires,
+    install_requires=requires
 )

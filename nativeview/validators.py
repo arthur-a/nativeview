@@ -1,6 +1,7 @@
 import re
 
 from exceptions import ValidationError
+from i18n import TranslationStringFactory as _
 
 
 class ValidatedChain(object):
@@ -28,7 +29,8 @@ class ValidatedChain(object):
 
 
 class Choices(object):
-    error_message = "%s is not one of %s."
+    error_message = _("'${value}' is not one of ${choices_values}.")
+
     def __init__(self, iter_or_func):
         """
         :iter_or_func: any iterable or callable object.
@@ -50,16 +52,17 @@ class Choices(object):
         choices_values = [v for v, l in self]
         if value not in choices_values:
             choices_values = ', '.join('%s' % v for v in choices_values)
-            message = self.error_message % (value, choices_values)
-            raise ValidationError(message, unit)
+            detail = self.error_message % {
+                'value': value, 'choices_values': choices_values}
+            raise ValidationError(detail, unit)
 
     def get_metadata(self, unit):
         return {'choices': [dict(value=v, label=l) for v,l in self]}
 
 
 class Range(object):
-    min_error_message = '%s is less than minimum value %s.'
-    max_error_message = '%s is greater than maximum value %s.'
+    min_error_message = _("'${value}' is less than minimum value ${min}.")
+    max_error_message = _("'${value}' is greater than maximum value ${max}.")
 
     def __init__(self, min=None, max=None):
         self.min = min
@@ -68,13 +71,15 @@ class Range(object):
     def __call__(self, unit, value):
         if self.min is not None:
             if value < self.min:
-                raise ValidationError(
-                    self.min_error_message % (value, self.min), unit)
+                detail = self.min_error_message % \
+                    {'value': value, 'min': self.min}
+                raise ValidationError(detail, unit)
 
         if self.max is not None:
             if value > self.max:
-                raise ValidationError(
-                    self.max_error_message % (value, self.max), unit)
+                detail = self.max_error_message % \
+                    {'value': value, 'max': self.max}
+                raise ValidationError(detail, unit)
 
     def get_metadata(self, unit):
         metadata = {}
@@ -89,8 +94,8 @@ class Range(object):
 
 
 class Length(object):
-    min_error_message = 'Shorter than minimum length %s.'
-    max_error_message = 'Longer than maximum length %s.'
+    min_error_message = _('Shorter than minimum length ${min}.')
+    max_error_message = _('Longer than maximum length ${max}.')
 
     def __init__(self, min=None, max=None):
         self.min = min
@@ -99,11 +104,13 @@ class Length(object):
     def __call__(self, unit, value):
         if self.min is not None:
             if len(value) < self.min:
-                raise ValidationError(self.min_error_message % self.min, unit)
+                detail = self.min_error_message % {'min': self.min}
+                raise ValidationError(detail, unit)
 
         if self.max is not None:
             if len(value) > self.max:
-                raise ValidationError(self.max_error_message % self.max, unit)
+                detail = self.max_error_message % {'max': self.max}
+                raise ValidationError(detail, unit)
 
     def get_metadata(self, unit):
         metadata = {}
@@ -118,7 +125,8 @@ class Length(object):
 
 
 class Regex(object):
-    error_message = "String does not match expected pattern."
+    error_message = _("String does not match expected pattern.")
+
     def __init__(self, regex, error_message=None):
         self.match_object = re.compile(regex)
         if error_message is not None:
@@ -131,7 +139,8 @@ class Regex(object):
 
 class Email(Regex):
     regex = "(?i)^[A-Z0-9._%!#$%&'*+-/=?^_`{|}~()]+@[A-Z0-9]+([.-][A-Z0-9]+)*\.[A-Z]{2,8}$"
-    error_message = "Invalid email address."
+    error_message = _("Invalid email address.")
+
     def __init__(self, error_message=None):
         if error_message is not None:
             self.error_message = error_message

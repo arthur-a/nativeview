@@ -1,10 +1,12 @@
 from collections import OrderedDict
 import datetime
+import translationstring
 
 import arrow
 
 from exceptions import ValidationError
 from units import empty, SkipUnit
+from i18n import TranslationStringFactory as _
 
 
 __all__ = [
@@ -41,7 +43,7 @@ class UnitType(object):
 
 class Integer(UnitType):
     default_error_messages = {
-        'invalid': 'Enter a whole number.'
+        'invalid': _('Enter a whole number.')
     }
 
     def serialize(self, value):
@@ -62,7 +64,8 @@ class Integer(UnitType):
 
 class DateTime(UnitType):
     default_error_messages = {
-        'invalid': "Datetime has wrong format. Use this format instead: '%s'.",
+        'invalid': _(
+            "Datetime has wrong format. Use this format instead: '${format}'."),
     }
     format = 'YYYY-MM-DDTHH:mm:ss.SSSZZ'
     input_formats = [
@@ -88,13 +91,14 @@ class DateTime(UnitType):
         try:
             return arrow.get(value, self.input_formats).datetime
         except (TypeError, arrow.parser.ParserError):
-            msg = self.error_messages['invalid'] % self.format
+            msg = self.error_messages['invalid'] % {'format': self.format}
             raise ValidationError(msg, self.unit)
 
 
 class Date(UnitType):
     default_error_messages = {
-        'invalid': "Date has wrong format. Use this format instead: '%s'.",
+        'invalid': _(
+            "Date has wrong format. Use this format instead: '${format}'."),
     }
     format = 'YYYY-MM-DD'
 
@@ -115,7 +119,7 @@ class Date(UnitType):
         try:
             return arrow.get(value, self.format).date()
         except (TypeError, arrow.parser.ParserError):
-            msg = self.error_messages['invalid'] % self.format
+            msg = self.error_messages['invalid'] % {'format': self.format}
             raise ValidationError(msg, self.unit)
 
 
@@ -141,7 +145,7 @@ class String(UnitType):
 
 class FileFieldStorage(UnitType):
     default_error_messages = {
-        'invalid': "The submitted data was not a file.",
+        'invalid': _("The submitted data was not a file."),
     }
 
     def serialize(self, value):
@@ -166,7 +170,7 @@ class FileFieldStorage(UnitType):
 
 class Boolean(UnitType):
     default_error_messages = {
-        'invalid': 'invalid boolean.'
+        'invalid': _('Invalid boolean value.')
     }
     TRUE_VALUES = set(('t', 'T', 'true', 'True', 'TRUE', '1', 1, True))
     FALSE_VALUES = set(('f', 'F', 'false', 'False', 'FALSE', '0', 0, 0.0, False))
@@ -256,6 +260,9 @@ class ObjectMapping(MappingDeserializeMixin, UnitType):
 
 
 class Sequence(UnitType):
+    default_error_messages = {
+        'iterable': _("'${value}' is not a sequence."),
+    }
     def _validate_seq(self, value):
         if isinstance(value, list):
             return value
@@ -264,7 +271,7 @@ class Sequence(UnitType):
             not isinstance(value, basestring)):
             return list(value)
         else:
-            detail = "%s is not iterable" % value
+            detail = self.errors['iterable'] % {'value': value}
             raise ValidationError(detail, self.unit)
 
     def serialize(self, value):
@@ -287,6 +294,7 @@ class Sequence(UnitType):
 
         child = self.unit.children.values()[0]
         if self.unit.read_only:
+            # TODO: Do it in run_validation method in unit instance.
             if self.unit.name:
                 detail = "%s is read only value." % self.unit.name
             else:
