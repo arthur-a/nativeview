@@ -47,7 +47,7 @@ class MappingSchema(SchemaBase, SchemaUnit):
                 child = self.children[name]
                 if subval is not None and hasattr(child, 'sync'):
                     subval = child.sync(value=subval, mapping=mapping)
-                instance[name] = subval
+                instance[child.name] = subval
 
         return self.sync_impl(instance, value, callback, mapping)
 
@@ -61,7 +61,7 @@ class ObjectMappingSchema(SchemaBase, SchemaUnit):
                 child = self.children[name]
                 if subval is not None and hasattr(child, 'sync'):
                     subval = child.sync(value=subval, mapping=mapping)
-                setattr(instance, name, subval)
+                setattr(instance, child.name, subval)
 
         return self.sync_impl(instance, value, callback, mapping)
 

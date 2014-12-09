@@ -160,7 +160,8 @@ class SchemaMeta(type):
         for name, value in new_attrs.items():
             if isinstance(value, _SchemaUnit):
                 del new_attrs[name]
-                value.name = name
+                if value.name is None:
+                    value.name = name
                 units.append((name, value))
 
         units.sort(key=lambda el: el[1]._order)
