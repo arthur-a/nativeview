@@ -1,3 +1,4 @@
+import copy
 import itertools
 from collections import OrderedDict
 
@@ -28,7 +29,9 @@ class _SchemaUnit(object):
 
     def __new__(cls, *args, **kw):
         unit = object.__new__(cls)
-        unit.children = OrderedDict(cls.__schema_units__)
+        unit.children = OrderedDict()
+        for name, child in cls.__schema_units__.iteritems():
+            unit.children[name] = copy.deepcopy(child)
         unit._order = next(cls._counter)
         for child in unit.children.itervalues():
             child.parent = unit
