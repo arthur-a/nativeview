@@ -126,22 +126,18 @@ class Length(object):
 
 class Regex(object):
     error_message = _("String does not match expected pattern.")
+    pattern = None
 
-    def __init__(self, regex, error_message=None):
-        self.match_object = re.compile(regex)
+    def __init__(self, pattern=None, error_message=None):
+        self.pattern = pattern or self.pattern
         if error_message is not None:
             self.error_message = error_message
 
     def __call__(self, unit, value):
-        if self.match_object.match(value) is None:
+        if re.match(self.pattern, value) is None:
             raise ValidationError(self.error_message, unit)
 
 
 class Email(Regex):
-    regex = "(?i)^[A-Z0-9._%!#$%&'*+-/=?^_`{|}~()]+@[A-Z0-9]+([.-][A-Z0-9]+)*\.[A-Z]{2,8}$"
+    pattern = "(?i)^[A-Z0-9._%!#$%&'*+-/=?^_`{|}~()]+@[A-Z0-9]+([.-][A-Z0-9]+)*\.[A-Z]{2,8}$"
     error_message = _("Invalid email address.")
-
-    def __init__(self, error_message=None):
-        if error_message is not None:
-            self.error_message = error_message
-        super(Email, self).__init__(self.regex)
