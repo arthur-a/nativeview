@@ -9,7 +9,8 @@ from i18n import TranslationStringFactory as _
 __all__ = ['SchemaUnit']
 
 
-class empty: pass
+class empty:
+    pass
 
 
 class SkipUnit(Exception):
@@ -124,12 +125,6 @@ class _SchemaUnit(object):
             self._errors = e.detail
 
         return not bool(self._errors)
-
-    @property
-    def errors(self):
-        assert hasattr(self, '_errors'), \
-            'You must call `.is_valid()` before accessing `.errors`.'
-        return self._errors
 
     @property
     def errors(self):
