@@ -81,6 +81,9 @@ class _SchemaUnit(object):
 
         assert not kwargs, 'Unknown arguments: %s' % kwargs
 
+    def set_object(self, obj):
+        self.source_object = obj
+
     def serialize(self, value=empty):
         if value is empty:
             value = self.source_object
