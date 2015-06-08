@@ -84,9 +84,9 @@ class _SchemaUnit(object):
     def schema_type(self):
         raise NotImplementedError
 
-    def bind(self, obj=empty, context=empty, data=empty):
-        if obj is not empty:
-            self.source_object = obj
+    def bind(self, object=empty, context=empty, data=empty):
+        if object is not empty:
+            self.source_object = object
         if context is not empty:
             self._context = context
         if data is not empty:
