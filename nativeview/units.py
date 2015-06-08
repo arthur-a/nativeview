@@ -21,7 +21,6 @@ class SkipUnit(Exception):
 
 class _SchemaUnit(object):
     _counter = itertools.count()
-    schema_type = None
 
     default_error_messages = {
         'required': _('This field is required.'),
@@ -81,8 +80,17 @@ class _SchemaUnit(object):
 
         assert not kwargs, 'Unknown arguments: %s' % kwargs
 
-    def set_object(self, obj):
-        self.source_object = obj
+    @property
+    def schema_type(self):
+        raise NotImplementedError
+
+    def bind(self, obj=empty, context=empty, data=empty):
+        if obj is not empty:
+            self.source_object = obj
+        if context is not empty:
+            self._context = context
+        if data is not empty:
+            self._initial_data = data
 
     def serialize(self, value=empty):
         if value is empty:
