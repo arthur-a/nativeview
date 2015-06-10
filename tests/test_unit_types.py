@@ -37,7 +37,7 @@ class TestDateTime(unittest.TestCase):
         self.assertEqual(
             self.type.serialize(
                 datetime(2014, 11, 24, 21, 46, 10, 20)),
-            '2014-11-24T21:46:10-00:00')
+            '2014-11-24T21:46:10.0-00:00')
 
     def test_serialize_fails(self):
         self.assertRaises(ValueError, self.type.serialize, 'Broken')
