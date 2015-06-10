@@ -33,6 +33,7 @@ def handle_mapping(unit, only_type=False):
 
 handlers_lookup = {
     unit_types.Integer: handle_basic,
+    unit_types.Float: handle_basic,
     unit_types.String: handle_basic,
     unit_types.Date: handle_basic,
     unit_types.DateTime: handle_basic,
@@ -52,6 +53,7 @@ def lookup_handler(unit):
 
 types_lookup = {
     unit_types.Integer: 'integer',
+    unit_types.Float: 'float',
     unit_types.String: 'string',
     unit_types.Date: 'string',
     unit_types.DateTime: 'string',

@@ -4,7 +4,8 @@ from datetime import datetime, date
 import dateutil.tz
 
 from nativeview import (
-    ValidationError, Integer, DateTime, Date, String)
+    ValidationError, Integer, Float,
+    DateTime, Date, String)
 
 
 UTC = dateutil.tz.gettz('UTC')
@@ -24,6 +25,25 @@ class TestInteger(unittest.TestCase):
     def test_deserialize_ok(self):
         self.assertEqual(self.type.deserialize(1), 1)
         self.assertEqual(self.type.deserialize('1'), 1)
+
+    def test_deserialize_fails(self):
+        self.assertRaises(ValidationError, self.type.deserialize, 'Broken')
+
+
+class TestFloat(unittest.TestCase):
+    def setUp(self):
+        self.type = Float()
+
+    def test_serialize_ok(self):
+        self.assertEqual(self.type.serialize(1.2), 1.2)
+        self.assertEqual(self.type.serialize('1.2'), 1.2)
+
+    def test_serialize_fails(self):
+        self.assertRaises(ValueError, self.type.serialize, 'Broken')
+
+    def test_deserialize_ok(self):
+        self.assertEqual(self.type.deserialize(1.2), 1.2)
+        self.assertEqual(self.type.deserialize('1.2'), 1.2)
 
     def test_deserialize_fails(self):
         self.assertRaises(ValidationError, self.type.deserialize, 'Broken')

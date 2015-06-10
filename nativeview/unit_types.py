@@ -10,9 +10,10 @@ from i18n import TranslationStringFactory as _
 
 
 __all__ = [
-    'ValidationError', 'Integer', 'DateTime', 'Date',
-    'String', 'FileFieldStorage', 'Boolean',
-    'Mapping', 'ObjectMapping', 'Sequence'
+    'ValidationError', 'Integer', 'Float',
+    'DateTime', 'Date', 'String',
+    'FileFieldStorage', 'Boolean', 'Mapping',
+    'ObjectMapping', 'Sequence'
 ]
 
 
@@ -58,6 +59,27 @@ class Integer(UnitType):
     def deserialize(self, value):
         try:
             return int(str(value))
+        except (TypeError, ValueError):
+            raise ValidationError(self.error_messages['invalid'], self.unit)
+
+
+class Float(UnitType):
+    default_error_messages = {
+        'invalid': _('Enter a floating-point number.')
+    }
+
+    def serialize(self, value):
+        if value is None:
+            return value
+
+        if isinstance(value, float):
+            return value
+
+        return float(str(value))
+
+    def deserialize(self, value):
+        try:
+            return float(str(value))
         except (TypeError, ValueError):
             raise ValidationError(self.error_messages['invalid'], self.unit)
 
