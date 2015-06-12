@@ -45,7 +45,7 @@ class MappingSchema(SchemaBase, SchemaUnit):
         def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
-                if subval is not None and hasattr(child, 'sync'):
+                if subval is not None and isinstance(child, SchemaBase):
                     subval = child.sync(value=subval, mapping=mapping)
                 instance[child.name] = subval
 
@@ -59,7 +59,7 @@ class ObjectMappingSchema(SchemaBase, SchemaUnit):
         def callback(instance, value, mapping):
             for name, subval in value.iteritems():
                 child = self.children[name]
-                if subval is not None and hasattr(child, 'sync'):
+                if subval is not None and isinstance(child, SchemaBase):
                     subval = child.sync(value=subval, mapping=mapping)
                 setattr(instance, child.name, subval)
 
@@ -83,7 +83,7 @@ class SequenceSchema(SchemaBase, SchemaUnit):
             child = self.children.values()[0]
             for i in xrange(len(value)):
                 subval = value[i]
-                if subval is not None and hasattr(child, 'sync'):
+                if subval is not None and isinstance(child, SchemaBase):
                     subval = child.sync(value=subval, mapping=mapping)
                 instance.append(subval)
 
