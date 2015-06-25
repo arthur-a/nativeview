@@ -285,6 +285,7 @@ class Sequence(UnitType):
     default_error_messages = {
         'iterable': _("'${value}' is not a sequence."),
     }
+
     def _validate_seq(self, value):
         if isinstance(value, list):
             return value
@@ -293,7 +294,7 @@ class Sequence(UnitType):
             not isinstance(value, basestring)):
             return list(value)
         else:
-            detail = self.errors['iterable'] % {'value': value}
+            detail = self.error_messages['iterable'] % {'value': value}
             raise ValidationError(detail, self.unit)
 
     def serialize(self, value):
