@@ -92,6 +92,11 @@ class _SchemaUnit(object):
         if data is not empty:
             self._initial_data = data
 
+    def reset(self):
+        self.source_object = None
+        self._context = {}
+        self._initial_data = empty
+
     def serialize(self, value=empty):
         if value is empty:
             value = self.source_object
