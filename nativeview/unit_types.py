@@ -1,6 +1,5 @@
 from collections import OrderedDict
 import datetime
-import translationstring
 
 import arrow
 
@@ -11,9 +10,9 @@ from i18n import TranslationStringFactory as _
 
 __all__ = [
     'ValidationError', 'Integer', 'Float',
-    'DateTime', 'Date', 'String',
-    'FileFieldStorage', 'Boolean', 'Mapping',
-    'ObjectMapping', 'Sequence'
+    'DateTime', 'Date', 'TimeDeltaSeconds',
+    'String', 'FileFieldStorage', 'Boolean',
+    'Mapping', 'ObjectMapping', 'Sequence'
 ]
 
 
@@ -145,6 +144,26 @@ class Date(UnitType):
             raise ValidationError(msg, self.unit)
 
 
+class TimeDeltaSeconds(Integer):
+    default_error_messages = {
+        'overflow:': _('Overflow value.'),
+    }
+
+    def serialize(self, value):
+        if value is None:
+            return value
+
+        return value.total_seconds()
+
+    def deserialize(self, value):
+        value = super(TimeDeltaSeconds, self).deserialize(value)
+        try:
+            return datetime.timedelta(seconds=value)
+        except OverflowError:
+            msg = self.error_messages['overflow']
+            raise ValidationError(msg, self.unit)
+
+
 class String(UnitType):
     def serialize(self, value):
         if value is None:
@@ -181,8 +200,8 @@ class FileFieldStorage(UnitType):
             return None
 
         try:
-            file_name = data.filename
-            file_size = data.file
+            getattr(data, 'filename')
+            getattr(data, 'file')
         except AttributeError:
             message = self.error_messages['invalid']
             raise ValidationError(message, self.unit)
