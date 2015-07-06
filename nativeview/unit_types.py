@@ -153,7 +153,7 @@ class TimeDeltaSeconds(Integer):
         if value is None:
             return value
 
-        return value.total_seconds()
+        return int(value.total_seconds())
 
     def deserialize(self, value):
         value = super(TimeDeltaSeconds, self).deserialize(value)
