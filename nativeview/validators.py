@@ -94,22 +94,35 @@ class Range(object):
 
 
 class Length(object):
+    # TODO: Make some mixin class to handle error messages and
+    # use it in all validators here and in unit_types module.
+    default_error_messages = {
+        'min': _('Shorter than minimum length ${min}.'),
+        'max': _('Longer than maximum length ${max}.')
+    }
+
     min_error_message = _('Shorter than minimum length ${min}.')
     max_error_message = _('Longer than maximum length ${max}.')
 
-    def __init__(self, min=None, max=None):
+    def __init__(self, min=None, max=None, error_messages=None):
         self.min = min
         self.max = max
+
+        messages = {}
+        for c in reversed(self.__class__.__mro__):
+            messages.update(getattr(c, 'default_error_messages', {}))
+        messages.update(error_messages or {})
+        self.error_messages = messages
 
     def __call__(self, unit, value):
         if self.min is not None:
             if len(value) < self.min:
-                detail = self.min_error_message % {'min': self.min}
+                detail = self.error_messages['min'] % {'min': self.min}
                 raise ValidationError(detail, unit)
 
         if self.max is not None:
             if len(value) > self.max:
-                detail = self.max_error_message % {'max': self.max}
+                detail = self.error_messages['max'] % {'max': self.max}
                 raise ValidationError(detail, unit)
 
     def get_metadata(self, unit):
