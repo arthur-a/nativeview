@@ -8,6 +8,9 @@ class ValidatedChain(object):
     def __init__(self, *validators):
         self.validators = validators
 
+    def add(self, validator):
+        self.validators.append(validator)
+
     def __call__(self, unit, value):
         errors = []
         for validator in self.validators:
