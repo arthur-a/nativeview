@@ -6,7 +6,7 @@ from i18n import TranslationStringFactory as _
 
 class ValidatedChain(object):
     def __init__(self, *validators):
-        self.validators = validators
+        self.validators = list(validators)
 
     def add(self, validator):
         self.validators.append(validator)
